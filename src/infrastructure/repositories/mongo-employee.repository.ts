@@ -1,9 +1,12 @@
+
 import { InjectModel } from '@nestjs/mongoose';
+import { Injectable, NotFoundException } from '@nestjs/common'; 
 import { Model } from 'mongoose';
 import { EmployeeRepository } from '../../domain/repositories/employee.repository';
 import { Employee } from '../../domain/entities/employee.entity';
 import { EmployeeDocument } from '../database/schemas/employee.schema';
 
+@Injectable()
 export class MongoEmployeeRepository implements EmployeeRepository {
   constructor(
     @InjectModel('Employee') private readonly employeeModel: Model<EmployeeDocument>,
@@ -39,5 +42,31 @@ export class MongoEmployeeRepository implements EmployeeRepository {
       email: savedEmployee.email,
       position: savedEmployee.position,
     };
+  }
+
+  async update(id: string, updateData: Partial<Employee>): Promise<Employee> {
+    const updatedEmployee = await this.employeeModel.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true }, 
+    ).exec();
+    
+    if (!updatedEmployee) {
+      throw new NotFoundException(`Employee with ID ${id} not found`);
+    }
+  
+    return {
+      id: updatedEmployee._id.toString(),
+      fullname: updatedEmployee.fullname,
+      email: updatedEmployee.email,
+      position: updatedEmployee.position,
+    };
+  }
+
+  
+
+  async delete(id: string): Promise<boolean> {
+    const result = await this.employeeModel.findByIdAndDelete(id).exec();
+    return !!result; 
   }
 }
