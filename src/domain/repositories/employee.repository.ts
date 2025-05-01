@@ -1,11 +1,27 @@
+// src/domain/repositories/employee.repository.ts
+import { Injectable } from '@nestjs/common';
+import { IEmployeeRepository } from '../interfaces/employee-repository.interface';
 import { Employee } from '../entities/employee.entity';
 
-export interface EmployeeRepository {
-  findAll(): Promise<Employee[]>; 
-  findById(id: string): Promise<Employee | null>;
-  create(employee: Employee): Promise<Employee>;
-  update(id: string, updateData: Partial<Employee>): Promise<Employee | null>;
-  delete(id: string): Promise<boolean>;
+@Injectable()
+export class EmployeeRepository implements IEmployeeRepository {
+  findAll(): Promise<Employee[]> {
+    throw new Error('Method not implemented.');
+  }
+
+  findById(id: string): Promise<Employee | null> {
+    throw new Error('Method not implemented.');
+  }
+
+  create(employee: Partial<Employee>): Promise<Employee> {
+    throw new Error('Method not implemented.');
+  }
+
+  update(id: string, employee: Partial<Employee>): Promise<Employee | null> {
+    throw new Error('Method not implemented.');
+  }
+
+  delete(id: string): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
 }
-
-

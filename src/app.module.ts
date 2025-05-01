@@ -1,33 +1,36 @@
+// src/app.module.ts
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
+import { ConfigModule } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
 import { EmployeeController } from './presentation/controllers/employee.controller';
-import { CreateEmployeeUseCase } from './application/use-cases/employee_use-cases/create-employee.use-case';
-import { DeleteEmployeeUseCase } from './application/use-cases/employee_use-cases/delete-employee.use-case';
+import { EmployeeUseCasesModule } from './application/use-cases/employee_use-cases/employee.use-cases.module';
+import { EmployeeService } from './application/sevices/employee.service';
+import { AuthService } from './application/use-cases/auth.service';
 import { LoggerService } from './infrastructure/utils/logger.service';
 import { AuthModule } from './infrastructure/modules/auth.module';
-import { DatabaseModule } from './infrastructure/modules/database.module'; 
-import { ConfigModule } from '@nestjs/config';
-import { CaptchaService } from './captcha/captcha.service';
-import { CaptchaController } from './captcha/captcha.controller';
-import { AuthService } from 'src/application/use-cases/auth.service';
+import { DatabaseModule } from './infrastructure/database/database.module';
+import { CapchaService } from './infrastructure/capcha/capcha.service';
+import { CapchaController } from './infrastructure/capcha/capcha.controller';
 import { MailService } from './infrastructure/services/mail.service';
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://localhost:27017/staffixx'),
     ConfigModule.forRoot({ isGlobal: true }),
-    DatabaseModule, 
-    AuthModule, 
+    JwtModule.register({
+      secret: process.env.JWT_SECRET || 'yourSecretKey',
+      signOptions: { expiresIn: '1h' },
+    }),
+    EmployeeUseCasesModule,
+    AuthModule,
+    DatabaseModule, // DatabaseModule импорт қилинган
   ],
-  controllers: [EmployeeController, CaptchaController],
+  controllers: [EmployeeController, CapchaController],
   providers: [
-    LoggerService,
-    CreateEmployeeUseCase,
-    DeleteEmployeeUseCase,
-    CaptchaService,
+    EmployeeService,
     AuthService,
+    LoggerService,
+    CapchaService,
     MailService,
   ],
-  exports: [LoggerService,MailService],
 })
 export class AppModule {}

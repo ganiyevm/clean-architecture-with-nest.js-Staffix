@@ -1,72 +1,36 @@
-
+// src/infrastructure/repositories/mongo-employee.repository.ts
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Injectable, NotFoundException } from '@nestjs/common'; 
 import { Model } from 'mongoose';
-import { EmployeeRepository } from '../../domain/repositories/employee.repository';
 import { Employee } from '../../domain/entities/employee.entity';
-import { EmployeeDocument } from '../database/schemas/employee.schema';
+import { IEmployeeRepository } from '../../domain/interfaces/employee-repository.interface';
 
 @Injectable()
-export class MongoEmployeeRepository implements EmployeeRepository {
-  constructor(
-    @InjectModel('Employee') private readonly employeeModel: Model<EmployeeDocument>,
-  ) {}
+export class MongoEmployeeRepository implements IEmployeeRepository {
+  constructor(@InjectModel('Employee') private employeeModel: Model<Employee>) {} // "Employee" номи DatabaseModule да аниқлангани билан мос бўлиши керак
 
   async findAll(): Promise<Employee[]> {
-    const employees = await this.employeeModel.find().exec();
-    return employees.map(emp => ({
-      id: emp._id.toString(),
-      fullname: emp.fullname,
-      email: emp.email,
-      position: emp.position,
-    }));
+    return this.employeeModel.find().lean().exec();
   }
 
   async findById(id: string): Promise<Employee | null> {
-    const emp = await this.employeeModel.findById(id).exec();
-    if (!emp) return null;
-    return {
-      id: emp._id.toString(),
-      fullname: emp.fullname,
-      email: emp.email,
-      position: emp.position,
-    };
+    return this.employeeModel.findById(id).lean().exec();
   }
 
-  async create(employee: Employee): Promise<Employee> {
-    const createdEmployee = new this.employeeModel(employee);
-    const savedEmployee = await createdEmployee.save();
-    return {
-      id: savedEmployee._id.toString(),
-      fullname: savedEmployee.fullname,
-      email: savedEmployee.email,
-      position: savedEmployee.position,
-    };
+  async create(employee: Partial<Employee>): Promise<Employee> {
+    const savedEmployee = await this.employeeModel.create(employee);
+    return savedEmployee.toObject();
   }
 
-  async update(id: string, updateData: Partial<Employee>): Promise<Employee> {
-    const updatedEmployee = await this.employeeModel.findByIdAndUpdate(
-      id,
-      updateData,
-      { new: true }, 
-    ).exec();
-    
-    if (!updatedEmployee) {
-      throw new NotFoundException(`Employee with ID ${id} not found`);
-    }
-  
-    return {
-      id: updatedEmployee._id.toString(),
-      fullname: updatedEmployee.fullname,
-      email: updatedEmployee.email,
-      position: updatedEmployee.position,
-    };
+  async update(id: string, employee: Partial<Employee>): Promise<Employee | null> {
+    const updatedEmployee = await this.employeeModel
+      .findByIdAndUpdate(id, employee, { new: true })
+      .lean()
+      .exec();
+    return updatedEmployee;
   }
 
-  
-
-  async delete(id: string): Promise<boolean> {
-    const result = await this.employeeModel.findByIdAndDelete(id).exec();
-    return !!result; 
+  async delete(id: string): Promise<void> {
+    await this.employeeModel.findByIdAndDelete(id).exec();
   }
 }

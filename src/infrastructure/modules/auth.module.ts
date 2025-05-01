@@ -1,26 +1,23 @@
+// src/infrastructure/modules/auth.module.ts
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { AuthService } from '../../application/use-cases/auth/login-user.use-case';
-import { AuthController } from '../../presentation/controllers/auth.controller';
-import { DatabaseModule } from './database.module'; 
-import { PassportModule } from '@nestjs/passport';
-import { GoogleStrategy } from '../../application/use-cases/auth/google.strategy';
-import { MailService } from 'src/infrastructure/services/mail.service';
-
-
-
-
-
+import { DatabaseModule } from '../database/database.module'; // DatabaseModule импорт қилиш
+import { AuthService } from '../../application/use-cases/auth.service';
+import { MailService } from '../../infrastructure/services/mail.service';
+import { MongoUserRepository } from '../repositories/mongo-user.repository';
 @Module({
-  imports: [PassportModule,
-    DatabaseModule, 
+  imports: [
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'default_secret', 
-      signOptions: { expiresIn: '3600s' },
+      secret: process.env.JWT_SECRET || 'yourSecretKey',
+      signOptions: { expiresIn: '1h' },
     }),
+    DatabaseModule, // DatabaseModule импорт қилинган, шунда UserModel мавжуд бўлади
   ],
-  providers: [AuthService,GoogleStrategy,MailService],
-  controllers: [AuthController,MailService],
+  providers: [
+    AuthService,
+    MailService,
+    { provide: 'IUserRepository', useClass: MongoUserRepository }, // DatabaseModule дан олинган
+  ],
   exports: [AuthService],
 })
 export class AuthModule {}

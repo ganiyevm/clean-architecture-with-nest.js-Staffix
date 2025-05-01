@@ -1,4 +1,5 @@
-import { Injectable, Inject } from '@nestjs/common';
+// src/application/use-cases/employee-use-cases/create-employee.use-case.ts
+import { Injectable, Inject } from '@nestjs/common'; // @Inject импорт қилиш
 import { EmployeeRepository } from '../../../domain/repositories/employee.repository';
 import { Employee } from '../../../domain/entities/employee.entity';
 
@@ -9,19 +10,7 @@ export class CreateEmployeeUseCase {
     private readonly employeeRepository: EmployeeRepository,
   ) {}
 
-  async execute(employee: Employee): Promise<Employee> {
-    return this.employeeRepository.create(employee);
-  }
-  async findAll(): Promise<Employee[]> {
-    return this.employeeRepository.findAll();
-  }
-  async findById(id: string): Promise<Employee | null> {
-    return this.employeeRepository.findById(id);
-  }
-  async delete(id: string): Promise<void> {
-    await this.employeeRepository.delete(id);
-  }
-  async update(id: string, updateData: Partial<Employee>): Promise<Employee> {
-    return this.employeeRepository.update(id, updateData);
+  async execute(data: Partial<Employee>): Promise<Employee> {
+    return this.employeeRepository.create(data);
   }
 }
